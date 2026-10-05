@@ -73,15 +73,22 @@ class CertificateCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    certificate.uploadDate,
+                    _fmtDate(certificate.uploadDate),
                     style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
                   ),
                 ],
               ),
+              if (_isApproved(certificate) && certificate.pointsAwarded > 0) ...[
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  '+${certificate.pointsAwarded} pts',
+                  style: const TextStyle(color: AppColors.accent, fontSize: 12, fontWeight: FontWeight.w600),
+                ),
+              ],
               if (certificate.flagReason != null) ...[
                 const SizedBox(height: AppSpacing.sm),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                   decoration: BoxDecoration(
                     color: AppColors.statusFlaggedBg,
                     borderRadius: BorderRadius.circular(6),
@@ -95,6 +102,11 @@ class CertificateCard extends StatelessWidget {
                     ),
                   ),
                 ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  'Re-upload',
+                  style: const TextStyle(color: AppColors.accent, fontSize: 12, fontWeight: FontWeight.w600),
+                ),
               ],
             ],
           ),
@@ -103,3 +115,14 @@ class CertificateCard extends StatelessWidget {
     );
   }
 }
+
+String _fmtDate(String iso) {
+  final parts = iso.split('-');
+  if (parts.length != 3) return iso;
+  const months = {'01': 'Jan','02': 'Feb','03': 'Mar','04': 'Apr','05': 'May','06': 'Jun','07': 'Jul','08': 'Aug','09': 'Sep','10': 'Oct','11': 'Nov','12': 'Dec'};
+  final m = months[parts[1]] ?? parts[1];
+  return '${parts[2]} $m ${parts[0]}';
+}
+
+bool _isApproved(Certificate c) =>
+    c.status == CertificateStatus.autoApproved || c.status == CertificateStatus.reviewed;

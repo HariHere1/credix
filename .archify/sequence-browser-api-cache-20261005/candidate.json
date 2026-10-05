@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Browser to API Cache Miss",
+    "output": ".archify/sequence-browser-api-cache-20261005/web-request-cache-miss.html",
+    "viewBox": [1080, 560],
+    "column_fit": "spread",
+    "animation": "trace",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    { "id": "browser", "type": "external", "label": "Browser", "sublabel": "client" },
+    { "id": "api", "type": "backend", "label": "API", "sublabel": "request handler" },
+    { "id": "redis", "type": "database", "label": "Redis", "sublabel": "cache" },
+    { "id": "db", "type": "database", "label": "PostgreSQL", "sublabel": "source of truth" }
+  ],
+  "segments": [
+    { "from": 150, "to": 240, "label": "Request + cache check" },
+    { "from": 250, "to": 360, "label": "Cache miss fallback" },
+    { "from": 370, "to": 460, "label": "Fill cache + respond" }
+  ],
+  "messages": [
+    { "id": "request", "from": "browser", "to": "api", "y": 165, "label": "GET /item", "variant": "emphasis" },
+    { "id": "cache-read", "from": "api", "to": "redis", "y": 195, "label": "GET key", "variant": "default" },
+    { "id": "cache-miss", "from": "redis", "to": "api", "y": 225, "label": "miss", "variant": "return" },
+    { "id": "db-query", "from": "api", "to": "db", "y": 258, "label": "SELECT ... (miss)", "variant": "emphasis" },
+    { "id": "db-rows", "from": "db", "to": "api", "y": 288, "label": "rows", "variant": "return" },
+    { "id": "cache-fill", "from": "api", "to": "redis", "y": 320, "label": "SET key (fill cache)", "variant": "dashed" },
+    { "id": "response", "from": "api", "to": "browser", "y": 350, "label": "200 JSON", "variant": "return" }
+  ],
+  "activations": [
+    { "participant": "api", "from": 162, "to": 357, "type": "backend" },
+    { "participant": "redis", "from": 190, "to": 232, "type": "database" },
+    { "participant": "db", "from": 253, "to": 295, "type": "database" },
+    { "participant": "redis", "from": 316, "to": 326, "type": "database" }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Happy path",
+      "items": [
+        "Browser calls the API once",
+        "Cache hit would short-circuit the DB"
+      ]
+    },
+    {
+      "dot": "orange",
+      "title": "Cache miss",
+      "items": [
+        "Redis returns miss",
+        "API queries PostgreSQL for the source of truth"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Fill + respond",
+      "items": [
+        "API populates Redis before responding",
+        "200 JSON returned to the browser"
+      ]
+    }
+  ]
+}

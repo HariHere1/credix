@@ -31,22 +31,22 @@ class StudentDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SectionHeader(title: 'Summary'),
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.md),
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 child: Text('$total / 120 total points', style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
               ),
             ),
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.md),
             GroupPointsCard(groupLabel: 'GROUP I', earned: gi, max: 40, color: AppColors.groupI),
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.md),
             GroupPointsCard(groupLabel: 'GROUP II', earned: gii, max: 40, color: AppColors.groupII),
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.md),
             GroupPointsCard(groupLabel: 'GROUP III', earned: giii, max: 40, color: AppColors.groupIII),
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.xl),
             const SectionHeader(title: 'Certificates'),
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.md),
             if (certs.isEmpty)
               const EmptyState(
                 icon: Icons.folder_open_rounded,

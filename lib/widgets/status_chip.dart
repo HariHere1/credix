@@ -13,7 +13,7 @@ class StatusChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final (label, bg, fg) = _statusProps(status);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(AppSpacing.chipRadius),

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "08ea6854-9183-4613-9fbc-4b01f0ca7ce2",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "C:\\Users\\Harigovind.P\\Desktop\\Projects\\credix\\.archify\\sequence-browser-api-cache-20261005\\candidate.json",
+  "output": "C:\\Users\\Harigovind.P\\Desktop\\Projects\\credix\\.archify\\sequence-browser-api-cache-20261005\\web-request-cache-miss.html",
+  "specification": {
+    "sha256": "161424202710183fcc1e336d2e841828e505abc2cb1da7b22611f045d49b70ae",
+    "bytes": 2581
+  },
+  "artifact": {
+    "sha256": "ede7274d925832c3ac09d53397bc852fb9fc0ee5993ba8b977f03d988c242eef",
+    "bytes": 753269
+  }
+}

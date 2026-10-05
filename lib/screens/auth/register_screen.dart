@@ -47,20 +47,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Account')),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pagePadding, vertical: AppSpacing.lg),
+          padding: const EdgeInsets.fromLTRB(AppSpacing.pagePadding, AppSpacing.sm, AppSpacing.pagePadding, AppSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text('Student Registration', style: TextStyle(color: AppColors.textPrimary, fontSize: 20, fontWeight: FontWeight.w700)),
-              const SizedBox(height: 4),
-              const Text('Fill in your details to create an Activity Points account.', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+              Row(
+                children: [
+                  IconButton(onPressed: () => Navigator.of(context).pop(), icon: const Icon(Icons.arrow_back)),
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('ACTIVITY POINTS', style: TextStyle(color: AppColors.textDisabled, fontSize: 9, letterSpacing: 1.2)),
+                      Text('Register', style: TextStyle(color: AppColors.textPrimary, fontSize: 24, fontWeight: FontWeight.w700)),
+                    ],
+                  ),
+                ],
+              ),
               const SizedBox(height: AppSpacing.xl),
-              TextFormField(controller: _rollCtrl, decoration: const InputDecoration(labelText: 'Roll Number')),
-              const SizedBox(height: AppSpacing.md),
+              Center(child: Container(width: 110, height: 4, decoration: BoxDecoration(color: AppColors.textPrimary, borderRadius: BorderRadius.circular(4)))),
+              const SizedBox(height: AppSpacing.xl),
+              const Text('Create your CREDIX account', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w500)),
+              const SizedBox(height: 6),
+              const Text('Register to upload certificates and track your activity points.', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+              const SizedBox(height: AppSpacing.xl),
               TextFormField(controller: _nameCtrl, decoration: const InputDecoration(labelText: 'Full Name')),
+              const SizedBox(height: AppSpacing.md),
+              TextFormField(controller: _rollCtrl, decoration: const InputDecoration(labelText: 'Roll Number')),
               const SizedBox(height: AppSpacing.md),
               TextFormField(controller: _emailCtrl, keyboardType: TextInputType.emailAddress, decoration: const InputDecoration(labelText: 'Email')),
               const SizedBox(height: AppSpacing.md),
@@ -88,7 +102,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               const SizedBox(height: AppSpacing.xl),
-              SizedBox(height: 50, child: ElevatedButton(onPressed: _submit, child: const Text('Create Account'))),
+              SizedBox(height: 50, child: ElevatedButton(onPressed: _submit, child: const Text('Register'))),
               const SizedBox(height: AppSpacing.md),
               Center(
                 child: TextButton(

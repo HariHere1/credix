@@ -13,7 +13,7 @@ class ActivityPointsApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Activity Points',
+      title: 'CREDIX',
       debugShowCheckedModeBanner: false,
       theme: buildAppTheme(),
       home: const LoginScreen(),

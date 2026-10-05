@@ -44,11 +44,6 @@ class _ShimmerButtonState extends State<ShimmerButton>
 
   @override
   Widget build(BuildContext context) {
-    final animation = AlignmentTween(
-      begin: const Alignment(-1.6, 0),
-      end: const Alignment(1.6, 0),
-    ).animate(_controller);
-
     return ClipRRect(
       borderRadius: BorderRadius.circular(widget.borderRadius),
       child: Material(
@@ -62,17 +57,12 @@ class _ShimmerButtonState extends State<ShimmerButton>
               Positioned.fill(
                 child: IgnorePointer(
                   child: AnimatedBuilder(
-                    animation: animation,
-                    builder: (context, _) => Align(
-                      alignment: animation.value,
-                      child: Container(
-                        width: 80,
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.transparent, Colors.white38, Colors.transparent],
-                          stops: [0.0, 0.5, 1.0],
-                          ),
-                        ),
+                    animation: _controller,
+                    builder: (context, _) => CustomPaint(
+                      painter: _BorderGlowPainter(
+                        progress: _controller.value,
+                        color: Colors.white,
+                        radius: widget.borderRadius,
                       ),
                     ),
                   ),
@@ -84,4 +74,67 @@ class _ShimmerButtonState extends State<ShimmerButton>
       ),
     );
   }
+}
+
+/// Draws a faint full rounded border plus a bright "glow" segment that runs
+/// along the perimeter of the rounded rectangle.
+class _BorderGlowPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+  final double radius;
+
+  _BorderGlowPainter({
+    required this.progress,
+    required this.color,
+    required this.radius,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const strokeWidth = 3.0;
+    final rect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(
+        strokeWidth / 2,
+        strokeWidth / 2,
+        size.width - strokeWidth,
+        size.height - strokeWidth,
+      ),
+      Radius.circular(radius),
+    );
+    final path = Path()..addRRect(rect);
+
+    // Faint base border
+    canvas.drawPath(
+      path,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..color = color.withOpacity(0.18),
+    );
+
+    final metric = path.computeMetrics().first;
+    final total = metric.length;
+    if (total == 0) return;
+
+    final segLength = total * 0.28;
+    final start = (progress * total) % total;
+    final end = start + segLength;
+
+    Paint glow() => Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round
+      ..color = color.withOpacity(0.85);
+
+    if (end <= total) {
+      canvas.drawPath(metric.extractPath(start, end), glow());
+    } else {
+      canvas.drawPath(metric.extractPath(start, total), glow());
+      canvas.drawPath(metric.extractPath(0, end - total), glow());
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _BorderGlowPainter oldDelegate) =>
+      oldDelegate.progress != progress || oldDelegate.color != color;
 }

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../widgets/screen_header.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_spacing.dart';
 import 'review_queue_tab.dart';
 import 'students_tab.dart';
 import 'export_tab.dart';
@@ -27,9 +30,19 @@ class _AdvisorShellState extends State<AdvisorShell> {
       const AdvisorAccountTab(),
     ];
 
+    ScreenHeader.onProfileTap = () => setState(() => _selectedIndex = 3);
+
     return Scaffold(
       body: IndexedStack(index: _selectedIndex, children: tabs),
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppSpacing.bottomBarRadius)),
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            color: AppColors.surface,
+            border: Border(top: BorderSide(color: AppColors.border, width: 0.8)),
+          ),
+          child: NavigationBar(
+        height: 64,
         selectedIndex: _selectedIndex,
         onDestinationSelected: (i) => setState(() => _selectedIndex = i),
         destinations: const [
@@ -38,6 +51,8 @@ class _AdvisorShellState extends State<AdvisorShell> {
           NavigationDestination(icon: Icon(Icons.upload_file_outlined), selectedIcon: Icon(Icons.upload_file_rounded), label: 'Export'),
           NavigationDestination(icon: Icon(Icons.manage_accounts_outlined), selectedIcon: Icon(Icons.manage_accounts_rounded), label: 'Account'),
         ],
+          ),
+        ),
       ),
     );
   }

@@ -3,109 +3,154 @@ import '../../data/mock_data.dart';
 import '../../models/certificate.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
-import '../../widgets/empty_state.dart';
-import '../../widgets/section_header.dart';
+import '../../widgets/screen_header.dart';
 import 'review_screen.dart';
 
-class ReviewQueueTab extends StatelessWidget {
+class ReviewQueueTab extends StatefulWidget {
   final VoidCallback onQueueChanged;
 
   const ReviewQueueTab({super.key, required this.onQueueChanged});
 
   @override
-  Widget build(BuildContext context) {
-    final flagged = getFlaggedCertificates();
+  State<ReviewQueueTab> createState() => _ReviewQueueTabState();
+}
 
-    // Group by flag reason
-    final Map<String, List<Certificate>> byReason = {};
-    for (final c in flagged) {
-      final reason = c.flagReason ?? 'Unspecified';
-      byReason.putIfAbsent(reason, () => []).add(c);
-    }
+class _ReviewQueueTabState extends State<ReviewQueueTab> {
+  @override
+  Widget build(BuildContext context) {
+    final allFlagged = getFlaggedCertificates();
+    final visible = allFlagged.take(2).toList();
 
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          children: [
-            const Text('Review Queue'),
-            const SizedBox(width: AppSpacing.sm),
-            if (flagged.isNotEmpty)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: AppColors.statusFlaggedBg,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.statusFlaggedFg.withOpacity(0.3)),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(AppSpacing.pagePadding, AppSpacing.lg, AppSpacing.pagePadding, AppSpacing.lg),
+        children: [
+          const ScreenHeader(title: 'Review Queue', eyebrow: 'ADVISOR / ACTIVITY POINTS'),
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            children: [
+              Expanded(child: _StatTile(value: '—', label: 'In queue')),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(child: _StatTile(value: '—', label: 'Flagged')),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(child: _StatTile(value: '—', label: 'Reviewed')),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          SizedBox(
+            height: 38,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                FilterChip(
+                  label: const Text('All'),
+                  selected: true,
+                  onSelected: (_) {},
+                  backgroundColor: AppColors.surfaceVariant,
+                  selectedColor: AppColors.textPrimary,
+                  showCheckmark: false,
+                  labelStyle: const TextStyle(color: AppColors.onButtonPrimary, fontSize: 12),
                 ),
-                child: Text('${flagged.length}', style: const TextStyle(color: AppColors.statusFlaggedFg, fontSize: 12, fontWeight: FontWeight.w700)),
+                const SizedBox(width: AppSpacing.sm),
+                FilterChip(
+                  label: const Text('Type mismatch'),
+                  selected: false,
+                  onSelected: (_) {},
+                  backgroundColor: AppColors.surfaceVariant,
+                  showCheckmark: false,
+                  labelStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.only(top: AppSpacing.sm, bottom: AppSpacing.md),
+            child: Text('Record placeholders · student data not provided', style: TextStyle(color: AppColors.textDisabled, fontSize: 11)),
+          ),
+          ...visible.map((cert) => _reviewCard(context, cert)),
+        ],
+      ),
+    );
+  }
+
+  Widget _reviewCard(BuildContext context, Certificate cert) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('[Student name]', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+              const Text('[Roll number]', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+              const SizedBox(height: AppSpacing.md),
+              _detail('Claimed type', '[Activity type]'),
+              _detail('OCR-detected type', '[Detected type]'),
+              const SizedBox(height: AppSpacing.sm),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(color: AppColors.surfaceVariant, borderRadius: BorderRadius.circular(14)),
+                child: const Text('Type mismatch', style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
               ),
+              const SizedBox(height: AppSpacing.md),
+              Row(
+                children: [
+                  Expanded(child: ElevatedButton(onPressed: () => _openReview(context, cert), child: const Text('Approve'))),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(child: OutlinedButton(onPressed: () => _openReview(context, cert), child: const Text('Reject'))),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _detail(String label, String value) => Padding(
+        padding: const EdgeInsets.only(bottom: 7),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+            Text(value, style: const TextStyle(color: AppColors.textPrimary, fontSize: 12)),
+          ],
+        ),
+      );
+
+  Future<void> _openReview(BuildContext context, Certificate cert) async {
+    await Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => ReviewScreen(
+        certificate: cert,
+        studentName: getStudentById(cert.studentId)?.name ?? '[Student name]',
+        onAction: widget.onQueueChanged,
+      ),
+    ));
+    if (mounted) setState(() {});
+  }
+}
+
+class _StatTile extends StatelessWidget {
+  final String value;
+  final String label;
+
+  const _StatTile({required this.value, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md, horizontal: AppSpacing.sm),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('$value', style: const TextStyle(color: AppColors.textPrimary, fontSize: 20, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 2),
+            Text(label.toUpperCase(), style: const TextStyle(color: AppColors.textSecondary, fontSize: 10, letterSpacing: 0.8)),
           ],
         ),
       ),
-      body: flagged.isEmpty
-          ? const EmptyState(
-              icon: Icons.check_circle_outline_rounded,
-              title: 'All Clear!',
-              subtitle: 'There are no flagged certificates awaiting review.',
-            )
-          : ListView(
-              padding: const EdgeInsets.all(AppSpacing.pagePadding),
-              children: byReason.entries.map((entry) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SectionHeader(title: entry.key),
-                    const SizedBox(height: AppSpacing.sm),
-                    ...entry.value.map((cert) {
-                      final student = getStudentById(cert.studentId);
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                        child: Card(
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-                            onTap: () async {
-                              await Navigator.of(context).push(MaterialPageRoute(
-                                builder: (_) => ReviewScreen(
-                                  certificate: cert,
-                                  studentName: student?.name ?? 'Unknown Student',
-                                  onAction: onQueueChanged,
-                                ),
-                              ));
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(AppSpacing.md),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(student?.name ?? 'Unknown Student', style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
-                                  const SizedBox(height: 2),
-                                  Text(cert.title, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-                                  const SizedBox(height: AppSpacing.sm),
-                                  Row(
-                                    children: [
-                                      Text(cert.activityType, style: const TextStyle(color: AppColors.textDisabled, fontSize: 11)),
-                                      const Text(' · ', style: TextStyle(color: AppColors.textDisabled, fontSize: 11)),
-                                      Text('${cert.pointsIfTrusted} pts', style: const TextStyle(color: AppColors.accent, fontSize: 11, fontWeight: FontWeight.w600)),
-                                      const Spacer(),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                        decoration: BoxDecoration(color: AppColors.statusFlaggedBg, borderRadius: BorderRadius.circular(6)),
-                                        child: const Text('Flagged', style: TextStyle(color: AppColors.statusFlaggedFg, fontSize: 11, fontWeight: FontWeight.w600)),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                    const SizedBox(height: AppSpacing.lg),
-                  ],
-                );
-              }).toList(),
-            ),
     );
   }
 }
