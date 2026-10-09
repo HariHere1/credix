@@ -63,10 +63,6 @@ class _ReviewQueueTabState extends State<ReviewQueueTab> {
               ],
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.only(top: AppSpacing.sm, bottom: AppSpacing.md),
-            child: Text('Record placeholders · student data not provided', style: TextStyle(color: AppColors.textDisabled, fontSize: 11)),
-          ),
           ...visible.map((cert) => _reviewCard(context, cert)),
         ],
       ),
@@ -82,16 +78,16 @@ class _ReviewQueueTabState extends State<ReviewQueueTab> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('[Student name]', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
-              const Text('[Roll number]', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+              Text(getStudentById(cert.studentId)?.name ?? 'Unknown', style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+              Text(getStudentById(cert.studentId)?.rollNo ?? '—', style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
               const SizedBox(height: AppSpacing.md),
-              _detail('Claimed type', '[Activity type]'),
-              _detail('OCR-detected type', '[Detected type]'),
+              _detail('Claimed type', cert.activityType),
+              _detail('OCR-detected type', cert.extractedFields.detectedType),
               const SizedBox(height: AppSpacing.sm),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(color: AppColors.surfaceVariant, borderRadius: BorderRadius.circular(14)),
-                child: const Text('Type mismatch', style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
+                child: Text(cert.flagReason ?? 'Flagged', style: const TextStyle(color: AppColors.textSecondary, fontSize: 11)),
               ),
               const SizedBox(height: AppSpacing.md),
               Row(
@@ -123,7 +119,7 @@ class _ReviewQueueTabState extends State<ReviewQueueTab> {
     await Navigator.of(context).push(MaterialPageRoute(
       builder: (_) => ReviewScreen(
         certificate: cert,
-        studentName: getStudentById(cert.studentId)?.name ?? '[Student name]',
+        studentName: getStudentById(cert.studentId)?.name ?? 'Unknown',
         onAction: widget.onQueueChanged,
       ),
     ));

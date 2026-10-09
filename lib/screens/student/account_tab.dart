@@ -42,7 +42,7 @@ class StudentAccountTab extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('[Student name]', style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w600)),
+                      Text(s.name, style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w600)),
                       const SizedBox(height: 2),
                       Text(s.rollNo, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
                     ],
@@ -72,9 +72,9 @@ class StudentAccountTab extends StatelessWidget {
                   children: [
                     InfoRow(label: 'Roll number', value: s.rollNo),
                     Divider(color: AppColors.divider),
-                    InfoRow(label: 'Email', value: 'Not provided'),
+                    InfoRow(label: 'Email', value: s.email),
                     Divider(color: AppColors.divider),
-                    InfoRow(label: 'Department', value: 'Not provided'),
+                    InfoRow(label: 'Department', value: s.department),
                   ],
                 ),
               ),

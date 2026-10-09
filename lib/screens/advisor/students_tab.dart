@@ -65,10 +65,6 @@ class _StudentsTabState extends State<StudentsTab> {
                 : ListView(
                     padding: const EdgeInsets.fromLTRB(AppSpacing.pagePadding, AppSpacing.lg, AppSpacing.pagePadding, AppSpacing.lg),
                     children: [
-                      const Padding(
-                        padding: EdgeInsets.only(bottom: AppSpacing.md),
-                        child: Text('Record placeholders · student data not provided', style: TextStyle(color: AppColors.textDisabled, fontSize: 11)),
-                      ),
                       ...filtered.map((s) {
                         return Padding(
                           padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -89,23 +85,23 @@ class _StudentsTabState extends State<StudentsTab> {
                                           child: const Icon(Icons.person_outline, color: AppColors.textSecondary, size: 19),
                                         ),
                                         const SizedBox(width: AppSpacing.md),
-                                        const Expanded(
+                                        Expanded(
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              Text('[Student name]', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
-                                              Text('[Roll number]', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                                              Text(s.name, style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+                                              Text(s.rollNo, style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
                                             ],
                                           ),
                                         ),
                                       ],
                                     ),
                                     const SizedBox(height: AppSpacing.md),
-                                    const Row(
+                                    Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text('Total points', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-                                        Text('— / 120 pts', style: TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.w600)),
+                                        Text('${getStudentPoints(s.id)} / 120 pts', style: TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.w600)),
                                       ],
                                     ),
                                     const SizedBox(height: 8),
@@ -114,7 +110,7 @@ class _StudentsTabState extends State<StudentsTab> {
                                       child: TweenAnimationBuilder<double>(
                                         duration: const Duration(milliseconds: 700),
                                         curve: Curves.easeOut,
-                                        tween: Tween(begin: 0.0, end: 0.0),
+                                        tween: Tween(begin: 0.0, end: (getStudentPoints(s.id) / 120).clamp(0.0, 1.0)),
                                         builder: (context, value, _) => LinearProgressIndicator(value: value, minHeight: 5, color: AppColors.accent, backgroundColor: AppColors.surfaceVariant),
                                       ),
                                     ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/mock_data.dart';
+import '../../models/student.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../widgets/section_header.dart';
@@ -152,14 +153,7 @@ class _ExportTabState extends State<ExportTab> {
                       ],
                     ),
                     const Divider(height: AppSpacing.lg),
-                    _previewRow(),
-                    const Divider(height: AppSpacing.lg),
-                    _previewRow(),
-                    const SizedBox(height: AppSpacing.sm),
-                    const Text(
-                        'Preview placeholders. Student records and point totals have not been provided.',
-                        style: TextStyle(
-                            color: AppColors.textDisabled, fontSize: 11)),
+                    ...kMockStudents.take(2).map((s) => _previewRow(s)),
                   ],
                 ),
               ),
@@ -232,25 +226,24 @@ class _ExportTabState extends State<ExportTab> {
     );
   }
 
-  Widget _previewRow() => const Row(
+  Widget _previewRow(Student s) => Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('[Student name]',
-                  style: TextStyle(color: AppColors.textPrimary, fontSize: 14)),
+              Text(s.name,
+                  style: const TextStyle(color: AppColors.textPrimary, fontSize: 14)),
               SizedBox(height: 4),
-              Text('[Roll number]',
-                  style:
-                      TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+              Text(s.rollNo,
+                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
             ],
           ),
-          Text('—',
-              style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600)),
+          Text('${getStudentPoints(s.id)}',
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w600)),
         ],
       );
 }
