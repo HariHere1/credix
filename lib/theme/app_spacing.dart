@@ -13,9 +13,10 @@ abstract final class AppSpacing {
   static const double cardPadding = 18.0;
   static const double cardGap = 12.0;
 
-  static const double cardRadius = 20.0;
-  static const double buttonRadius = 16.0;
-  static const double chipRadius = 20.0;
-  static const double dialogRadius = 20.0;
+  static const double cardRadius = 16.0;
+  static const double buttonRadius = 12.0;
+  static const double chipRadius = 999.0;
+  static const double dialogRadius = 24.0;
   static const double bottomBarRadius = 24.0;
+  static const double bottomNavigationHeight = 72.0;
 }

@@ -59,7 +59,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('ACTIVITY POINTS', style: TextStyle(color: AppColors.textDisabled, fontSize: 9, letterSpacing: 1.2)),
+                      Text('ACTIVITY POINTS', style: TextStyle(color: AppColors.textDisabled, fontSize: 11, letterSpacing: 1.2)),
                       Text('Register', style: TextStyle(color: AppColors.textPrimary, fontSize: 24, fontWeight: FontWeight.w700)),
                     ],
                   ),

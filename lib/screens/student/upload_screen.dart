@@ -4,6 +4,7 @@ import '../../data/mock_data.dart';
 import '../../models/certificate.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
+import '../../widgets/slide_confirm_button.dart';
 
 class UploadScreen extends StatefulWidget {
   const UploadScreen({super.key});
@@ -18,7 +19,6 @@ class _UploadScreenState extends State<UploadScreen> {
   final _titleCtrl = TextEditingController();
   final _dateCtrl = TextEditingController();
   final _labelCtrl = TextEditingController();
-  bool _submitting = false;
 
   bool get _showLabelField => _selectedType == 'Other';
 
@@ -38,23 +38,27 @@ class _UploadScreenState extends State<UploadScreen> {
   }
 
   Future<void> _submit() async {
+    // Validation failures reject the confirm — the control
+    // springs back so the student can retry.
     if (_selectedFileName == null) {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please select a file first.')));
-      return;
+      throw StateError('no file selected');
     }
     if (_showLabelField && _labelCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please describe the activity.')));
-      return;
+      throw StateError('missing activity description');
     }
     if (_titleCtrl.text.trim().isEmpty || _dateCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Please enter the activity title and date.')));
-      return;
+      throw StateError('missing title or date');
     }
-    setState(() => _submitting = true);
-    await Future.delayed(const Duration(milliseconds: 800));
+
+    // Simulated upload + OCR pass. The spinner on the control
+    // runs while this future is in flight.
+    await Future.delayed(const Duration(milliseconds: 900));
 
     final activityType =
         _showLabelField ? _labelCtrl.text.trim() : _selectedType;
@@ -81,12 +85,13 @@ class _UploadScreenState extends State<UploadScreen> {
 
     kMockCertificates.add(newCert);
 
-    if (mounted) {
-      setState(() => _submitting = false);
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Certificate uploaded — status: Pending')));
-    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Certificate uploaded — status: Pending')));
+
+    // Let the confirmed state land briefly before leaving.
+    await Future.delayed(const Duration(milliseconds: 700));
+    if (mounted) Navigator.of(context).pop();
   }
 
   @override
@@ -225,18 +230,11 @@ class _UploadScreenState extends State<UploadScreen> {
               ),
             ),
             const SizedBox(height: AppSpacing.xl),
-            SizedBox(
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _submitting ? null : _submit,
-                child: _submitting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white))
-                    : const Text('Upload'),
-              ),
+            SlideConfirmButton(
+              label: 'Slide to Upload',
+              loadingLabel: 'Uploading…',
+              confirmedLabel: 'Uploaded',
+              onConfirm: _submit,
             ),
             const SizedBox(height: AppSpacing.md),
             const Text(

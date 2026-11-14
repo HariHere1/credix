@@ -29,7 +29,7 @@ class AdvisorAccountTab extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const ScreenHeader(
-                title: 'Account', eyebrow: 'ADVISOR / ACTIVITY POINTS'),
+                title: 'Advisor', eyebrow: 'PROFILE & SETTINGS'),
             Row(
               children: [
                 CircleAvatar(

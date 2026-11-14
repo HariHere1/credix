@@ -42,27 +42,45 @@ class FaqSection extends StatelessWidget {
 class FaqTile extends StatelessWidget {
   final String question;
   final String answer;
-  const FaqTile({super.key, required this.question, required this.answer});
+  final bool showDivider;
+
+  const FaqTile({
+    super.key,
+    required this.question,
+    required this.answer,
+    this.showDivider = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return ExpansionTile(
-      tilePadding: EdgeInsets.zero,
-      title: Text(
-        question,
-        style: const TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
-      ),
-      iconColor: AppColors.accent,
-      collapsedIconColor: AppColors.textSecondary,
-      visualDensity: VisualDensity.compact,
+    return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-          child: Text(
-            answer,
-            style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, height: 1.5),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.cardPadding),
+          child: ExpansionTile(
+            tilePadding: EdgeInsets.zero,
+            childrenPadding: const EdgeInsets.only(bottom: AppSpacing.md),
+            title: Text(
+              question,
+              style: const TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
+            ),
+            iconColor: AppColors.accent,
+            collapsedIconColor: AppColors.textSecondary,
+            visualDensity: VisualDensity.compact,
+            children: [
+              Text(
+                answer,
+                style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, height: 1.5),
+              ),
+            ],
           ),
         ),
+        if (showDivider)
+          const Divider(
+            height: 1,
+            indent: AppSpacing.cardPadding,
+            endIndent: AppSpacing.cardPadding,
+          ),
       ],
     );
   }

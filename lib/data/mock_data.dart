@@ -15,15 +15,15 @@ const Student kMockStudent = Student(
   rollNo: 'CS2021001',
   email: 'alex.j@college.edu',
   batch: '2021–2025',
-  department: 'Computer Science',
+  department: 'Computer Science & Engineering',
   password: 'student123',
 );
 
 const Advisor kMockAdvisor = Advisor(
   id: 'a001',
-  name: 'Dr. Priya Nair',
-  email: 'priya.nair@college.edu',
-  department: 'Computer Science',
+  name: 'Tinu Thomas',
+  email: 'admin@gmail.com',
+  department: 'Electronics and Computer Science',
   password: 'advisor123',
 );
 
@@ -170,6 +170,25 @@ int getGroupPoints(String studentId, ActivityGroup group) {
 
 List<Certificate> getStudentCertificates(String studentId) {
   return kMockCertificates.where((c) => c.studentId == studentId).toList();
+}
+
+/// Awarded points grouped by the semester in which the activity was recorded.
+/// This keeps advisor history focused on totals instead of certificate files.
+Map<String, int> getStudentSemesterPoints(String studentId) {
+  final student = getStudentById(studentId);
+  final startYear = int.tryParse(RegExp(r'\d{4}').firstMatch(student?.batch ?? '')?.group(0) ?? '');
+  final totals = <String, int>{};
+  for (final certificate in kMockCertificates.where((c) =>
+      c.studentId == studentId &&
+      (c.status == CertificateStatus.autoApproved || c.status == CertificateStatus.reviewed))) {
+    final date = DateTime.tryParse(certificate.uploadDate);
+    if (date == null) continue;
+    final academicStart = date.month >= 8 ? date.year : date.year - 1;
+    final semester = startYear == null ? 1 : ((academicStart - startYear) * 2) + (date.month >= 8 ? 1 : 2);
+    final key = 'Semester ${semester.clamp(1, 8)}';
+    totals.update(key, (points) => points + certificate.pointsAwarded, ifAbsent: () => certificate.pointsAwarded);
+  }
+  return totals;
 }
 
 List<Certificate> getFlaggedCertificates() {

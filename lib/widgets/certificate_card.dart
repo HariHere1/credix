@@ -18,7 +18,16 @@ class CertificateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isRejected = certificate.status == CertificateStatus.rejected;
+    final needsAttention = isRejected || certificate.status == CertificateStatus.flagged;
     return Card(
+      color: needsAttention ? const Color(0xFFFFFAFA) : AppColors.cardBackground,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+        side: BorderSide(
+          color: needsAttention ? AppColors.error.withValues(alpha: 0.25) : AppColors.border,
+        ),
+      ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
@@ -104,7 +113,7 @@ class CertificateCard extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  'Re-upload',
+                  'Fix details',
                   style: const TextStyle(color: AppColors.accent, fontSize: 12, fontWeight: FontWeight.w600),
                 ),
               ],

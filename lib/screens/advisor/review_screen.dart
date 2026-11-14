@@ -5,43 +5,76 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../widgets/info_row.dart';
 import '../../widgets/section_header.dart';
+import '../../widgets/slide_confirm_button.dart';
 
 class ReviewScreen extends StatelessWidget {
   final Certificate certificate;
   final String studentName;
   final VoidCallback onAction;
 
-  const ReviewScreen({super.key, required this.certificate, required this.studentName, required this.onAction});
+  const ReviewScreen(
+      {super.key,
+      required this.certificate,
+      required this.studentName,
+      required this.onAction});
 
-  void _approve(BuildContext context) {
+  Future<void> _approve(BuildContext context) async {
+    // Simulated automation round-trip. Replace with the real
+    // confirm call — throwing here springs the control back.
+    await Future.delayed(const Duration(milliseconds: 900));
+
     kMockCertificates.removeWhere((c) => c.id == certificate.id);
-    kMockCertificates.add(certificate.copyWith(status: CertificateStatus.reviewed, pointsAwarded: certificate.pointsIfTrusted));
+    kMockCertificates.add(certificate.copyWith(
+        status: CertificateStatus.reviewed,
+        pointsAwarded: certificate.pointsIfTrusted));
     onAction();
-    Navigator.of(context).pop();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Approved "${certificate.title}" (+${certificate.pointsIfTrusted} pts)')));
+
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+            'Approved "${certificate.title}" (+${certificate.pointsIfTrusted} pts)')));
+
+    // Let the confirmed state land briefly before leaving.
+    await Future.delayed(const Duration(milliseconds: 700));
+    if (context.mounted) Navigator.of(context).pop();
   }
 
   Future<void> _correctAndApprove(BuildContext context) async {
-    final result = await showDialog<Map<String, dynamic>>(context: context, builder: (_) => _CorrectApproveDialog(certificate: certificate));
+    final result = await showDialog<Map<String, dynamic>>(
+        context: context,
+        builder: (_) => _CorrectApproveDialog(certificate: certificate));
     if (result != null && context.mounted) {
       final updatedType = result['type'] as String;
       final updatedPoints = result['points'] as int;
       kMockCertificates.removeWhere((c) => c.id == certificate.id);
-      kMockCertificates.add(certificate.copyWith(status: CertificateStatus.reviewed, activityType: updatedType, pointsAwarded: updatedPoints));
+      kMockCertificates.add(certificate.copyWith(
+          status: CertificateStatus.reviewed,
+          activityType: updatedType,
+          pointsAwarded: updatedPoints));
       onAction();
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Corrected & Approved: $updatedType (+$updatedPoints pts)')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+              'Corrected & Approved: $updatedType (+$updatedPoints pts)')));
     }
   }
 
   Future<void> _reject(BuildContext context) async {
-    final reason = await showDialog<String>(context: context, builder: (_) => const _RejectDialog());
-    if (reason != null && reason.trim().isNotEmpty && context.mounted) {
+    final reason = await showDialog<String>(
+        context: context, builder: (_) => const _RejectDialog());
+    if (reason == null || reason.trim().isEmpty) {
+      throw StateError('Rejection cancelled');
+    }
+    if (context.mounted) {
       kMockCertificates.removeWhere((c) => c.id == certificate.id);
-      kMockCertificates.add(certificate.copyWith(status: CertificateStatus.rejected, rejectReason: reason.trim(), pointsAwarded: 0));
+      kMockCertificates.add(certificate.copyWith(
+          status: CertificateStatus.rejected,
+          rejectReason: reason.trim(),
+          pointsAwarded: 0));
       onAction();
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Rejected: "${certificate.title}"')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Rejected: "${certificate.title}"')));
     }
   }
 
@@ -64,13 +97,25 @@ class ReviewScreen extends StatelessWidget {
                   children: [
                     InfoRow(label: 'Student', value: studentName),
                     InfoRow(label: 'Title', value: certificate.title),
-                    InfoRow(label: 'Claimed type', value: certificate.activityType),
-                    InfoRow(label: 'Upload date', value: certificate.uploadDate),
+                    InfoRow(
+                        label: 'Claimed type', value: certificate.activityType),
+                    InfoRow(
+                        label: 'Upload date', value: certificate.uploadDate),
                     const SizedBox(height: AppSpacing.sm),
                     Container(
                       height: 120,
-                      decoration: BoxDecoration(color: AppColors.surfaceVariant, borderRadius: BorderRadius.circular(AppSpacing.cardRadius), border: Border.all(color: AppColors.border)),
-                      child: Center(child: Text('Preview placeholder (Mock file)\n${certificate.fileName}', textAlign: TextAlign.center, style: const TextStyle(color: AppColors.textDisabled, fontSize: 11))),
+                      decoration: BoxDecoration(
+                          color: AppColors.surfaceVariant,
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.cardRadius),
+                          border: Border.all(color: AppColors.border)),
+                      child: Center(
+                          child: Text(
+                              'Preview placeholder (Mock file)\n${certificate.fileName}',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                  color: AppColors.textDisabled,
+                                  fontSize: 11))),
                     ),
                   ],
                 ),
@@ -99,7 +144,11 @@ class ReviewScreen extends StatelessWidget {
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.md),
-                child: Text(certificate.flagReason ?? 'Unspecified flag', style: const TextStyle(color: AppColors.statusFlaggedFg, fontSize: 13, fontWeight: FontWeight.w600)),
+                child: Text(certificate.flagReason ?? 'Unspecified flag',
+                    style: const TextStyle(
+                        color: AppColors.statusFlaggedFg,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600)),
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -108,37 +157,37 @@ class ReviewScreen extends StatelessWidget {
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.md),
-                child: Text('${certificate.pointsIfTrusted} pts', style: const TextStyle(color: AppColors.accent, fontSize: 18, fontWeight: FontWeight.w800)),
+                child: Text('${certificate.pointsIfTrusted} pts',
+                    style: const TextStyle(
+                        color: AppColors.accent,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800)),
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
             const SectionHeader(title: 'Actions'),
             const SizedBox(height: AppSpacing.sm),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => _reject(context),
-                    style: OutlinedButton.styleFrom(foregroundColor: AppColors.error, side: const BorderSide(color: AppColors.error)),
-                    child: const Text('Reject'),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => _correctAndApprove(context),
-                    child: const Text('Correct & Approve'),
-                  ),
-                ),
-              ],
+            OutlinedButton.icon(
+              onPressed: () => _correctAndApprove(context),
+              icon: const Icon(Icons.tune_rounded, size: 18),
+              label: const Text('Adjust activity or points'),
             ),
             const SizedBox(height: AppSpacing.sm),
-            SizedBox(
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () => _approve(context),
-                child: const Text('Approve (Points As Is)'),
-              ),
+            SlideConfirmButton(
+              label: 'Slide to reject',
+              loadingLabel: 'Saving rejection…',
+              confirmedLabel: 'Rejected',
+              errorLabel: 'Rejection cancelled',
+              fillColor: AppColors.error,
+              thumbColor: AppColors.error,
+              onConfirm: () => _reject(context),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            SlideConfirmButton(
+              label: 'Slide to approve +${certificate.pointsIfTrusted} pts',
+              loadingLabel: 'Saving approval…',
+              confirmedLabel: 'Approved',
+              onConfirm: () => _approve(context),
             ),
           ],
         ),
@@ -162,8 +211,11 @@ class _CorrectApproveDialogState extends State<_CorrectApproveDialog> {
   @override
   void initState() {
     super.initState();
-    _type = kActivityTypes.contains(widget.certificate.activityType) ? widget.certificate.activityType : kActivityTypes.first;
-    _pointsCtrl = TextEditingController(text: widget.certificate.pointsIfTrusted.toString());
+    _type = kActivityTypes.contains(widget.certificate.activityType)
+        ? widget.certificate.activityType
+        : kActivityTypes.first;
+    _pointsCtrl = TextEditingController(
+        text: widget.certificate.pointsIfTrusted.toString());
   }
 
   @override
@@ -181,28 +233,45 @@ class _CorrectApproveDialogState extends State<_CorrectApproveDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Modify the activity type and points before approving.', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+            const Text('Modify the activity type and points before approving.',
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
             const SizedBox(height: AppSpacing.md),
             DropdownButtonFormField<String>(
-              value: _type,
-              decoration: const InputDecoration(labelText: 'Corrected Activity Type'),
+              initialValue: _type,
+              decoration:
+                  const InputDecoration(labelText: 'Corrected Activity Type'),
               dropdownColor: AppColors.surface,
-              items: kActivityTypes.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+              items: kActivityTypes
+                  .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                  .toList(),
               onChanged: (v) => setState(() => _type = v ?? _type),
             ),
             const SizedBox(height: AppSpacing.md),
-            TextFormField(controller: _pointsCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Points Awarded')),
+            TextFormField(
+                controller: _pointsCtrl,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: 'Points Awarded')),
           ],
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
-        ElevatedButton(
-          onPressed: () {
-            final pts = int.tryParse(_pointsCtrl.text.trim()) ?? widget.certificate.pointsIfTrusted;
+        TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel')),
+        SizedBox(
+          width: 190,
+          child: SlideConfirmButton(
+            height: 48,
+            thumbSize: 38,
+            label: 'Slide to approve',
+            loadingLabel: 'Saving…',
+            confirmedLabel: 'Approved',
+            onConfirm: () async {
+            final pts = int.tryParse(_pointsCtrl.text.trim()) ??
+                widget.certificate.pointsIfTrusted;
             Navigator.of(context).pop({'type': _type, 'points': pts});
-          },
-          child: const Text('Approve'),
+            },
+          ),
         ),
       ],
     );
@@ -233,16 +302,29 @@ class _RejectDialogState extends State<_RejectDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Specify why this certificate is being rejected. The student will see this note.', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+          const Text(
+              'Specify why this certificate is being rejected. The student will see this note.',
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
           const SizedBox(height: AppSpacing.md),
-          TextField(controller: _ctrl, maxLines: 3, decoration: const InputDecoration(labelText: 'Rejection Reason', hintText: 'e.g. Incomplete details, invalid signature, unaccredited event…', alignLabelWithHint: true)),
+          TextField(
+              controller: _ctrl,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                  labelText: 'Rejection Reason',
+                  hintText:
+                      'e.g. Incomplete details, invalid signature, unaccredited event…',
+                  alignLabelWithHint: true)),
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+        TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel')),
         ElevatedButton(
           onPressed: () {
-            if (_ctrl.text.trim().isNotEmpty) Navigator.of(context).pop(_ctrl.text.trim());
+            if (_ctrl.text.trim().isNotEmpty) {
+              Navigator.of(context).pop(_ctrl.text.trim());
+            }
           },
           style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
           child: const Text('Reject'),

@@ -31,7 +31,7 @@ class PremiumHeroCard extends StatelessWidget {
                 children: [
                   Text(
                     eyebrow,
-                    style: const TextStyle(color: AppColors.accentLight, fontSize: 10, letterSpacing: 1.6, fontWeight: FontWeight.w700),
+                    style: const TextStyle(color: AppColors.accentLight, fontSize: 11, letterSpacing: 1.6, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 6),
                   value,

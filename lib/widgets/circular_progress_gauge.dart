@@ -43,14 +43,15 @@ class CircularProgressGauge extends StatelessWidget {
                   Text(
                     '${(animated * 100).round()}%',
                     style: const TextStyle(
+                      fontFamily: 'DMSans',
                       color: AppColors.textPrimary,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   const Text(
-                    'completed',
-                    style: TextStyle(color: AppColors.textSecondary, fontSize: 10),
+                    'of target',
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
                   ),
                 ],
               ),
@@ -74,7 +75,7 @@ class _GaugePainter extends CustomPainter {
     const stroke = 8.0;
     final rect = Offset(stroke / 2, stroke / 2) & Size(size.width - stroke, size.height - stroke);
 
-    // 10% white track
+    // Use the configured track color so the ring stays visible on light cards.
     canvas.drawArc(
       rect,
       0,
@@ -83,7 +84,7 @@ class _GaugePainter extends CustomPainter {
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = stroke
-        ..color = Colors.white12,
+        ..color = secondary,
     );
 
     // Foreground arc starting at the top
