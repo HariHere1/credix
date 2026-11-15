@@ -4,9 +4,8 @@ class AuditService {
   AuditService._();
   static final AuditService instance = AuditService._();
   final List<AuditEntry> _entries = [
-    AuditEntry(timestamp:DateTime.now().subtract(const Duration(minutes:2)),actor:'Dr. Anand R.',role:'Super Admin',action:'Rule viewed',target:'Group I cap',oldValue:'40 points',newValue:'40 points',reason:'Read-only event'),
-    AuditEntry(timestamp:DateTime.now().subtract(const Duration(minutes:14)),actor:'Dr. Elizabeth Joseph',role:'Department Admin',action:'Batch approved',target:'18 conference claims',oldValue:'Pending',newValue:'Approved',reason:'Documents verified against original certificates'),
-    AuditEntry(timestamp:DateTime.now().subtract(const Duration(minutes:32)),actor:'Admin System',role:'Super Admin',action:'OCR scan',target:'45 certificates',oldValue:'Queued',newValue:'Scanned; 0 duplicate matches',reason:'Scheduled processing'),
+    AuditEntry(timestamp:DateTime.now().subtract(const Duration(minutes:2)),actor:'Admin System',role:'Super Admin',action:'Auto-approved',target:'NSS Leadership Programme · Maria Garcia',oldValue:'OCR verified',newValue:'Approved',reason:'High-confidence demo certificate passed automated checks'),
+    AuditEntry(timestamp:DateTime.now().subtract(const Duration(minutes:14)),actor:'Admin System',role:'Super Admin',action:'Certificate received',target:'Seminar Project · Alex Johnson',oldValue:'Not submitted',newValue:'Pending',reason:'Demo certificate is waiting for tutor review'),
   ];
   List<AuditEntry> get entries => List.unmodifiable(_entries);
   void log({required String actor, required String role, required String action, required String target, required String oldValue, required String newValue, required String reason}) {

@@ -1,6 +1,6 @@
 # Credix Admin Panel
 
-The admin panel is a separate Flutter Web entry point for super admins, department admins and read-only auditors. It uses mock data and does not make API calls.
+The admin panel is a separate Flutter Web entry point for super admins, department admins and read-only auditors. It uses a small shared demo dataset (two students and seven certificates) and does not make API calls. Alex has a low score and review examples; Maria has 120 points, with 40 in each group.
 
 ## Run
 

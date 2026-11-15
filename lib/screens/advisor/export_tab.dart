@@ -41,7 +41,7 @@ class _ExportTabState extends State<ExportTab> {
       for (final group in ActivityGroup.values)
         kMockStudents.fold(0, (sum, student) => sum + getGroupPoints(student.id, group)),
     ];
-    final groupLabels = ['Group I · Tech & workshops', 'Group II · Sports & cultural', 'Group III · NSS, NCC & social'];
+    final groupLabels = ['Group I · NSS, arts & sports', 'Group II · Workshops, internships & conferences', 'Group III · Research & innovation'];
     final groupColors = [AppColors.groupI, AppColors.groupII, AppColors.groupIII];
     final attention = kMockStudents.where((s) => getStudentPoints(s.id) == 0).toList();
 

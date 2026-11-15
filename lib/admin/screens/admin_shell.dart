@@ -21,7 +21,7 @@ class AdminShell extends StatefulWidget {
 class _AdminShellState extends State<AdminShell> {
   AdminUser get user => AdminSession.instance.user!;
   int get selected => items.indexWhere((item)=>item.label==widget.section).clamp(0, items.length-1);
-  static const items = <_NavItem>[
+  static final items = <_NavItem>[
     _NavItem('Dashboard', Icons.grid_view_rounded), _NavItem('Users', Icons.people_alt_outlined),
     _NavItem('Submissions', Icons.fact_check_outlined, badge: '${AdminMockData.adminAttention}'), _NavItem('Rulebook', Icons.menu_book_outlined),
     _NavItem('Reports', Icons.auto_graph_rounded, later: true), _NavItem('Audit Log', Icons.history_rounded),

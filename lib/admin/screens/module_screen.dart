@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart' as mui;
 
 import '../../data/mock_data.dart';
 import '../../models/certificate.dart';
+import '../../models/student.dart';
 import '../admin_theme.dart';
 import '../models/admin_user.dart';
 import '../mock_data/admin_mock_data.dart';
@@ -32,19 +33,10 @@ class _ModuleScreenState extends State<ModuleScreen> {
   @override
   void initState() {
     super.initState();
-    const names = [
-      'Akhil Thomas',
-      'Ananya S.',
-      'Arjun Raj',
-      'Diya Joseph',
-      'Nikhil Babu',
-      'Sneha Mathew',
-      'Joel George'
-    ];
     _studentSource = _StudentSource(
       widget.user.role == AdminRole.departmentAdmin
-          ? names.take(3).toList()
-          : names,
+          ? kMockStudents.take(2).toList()
+          : kMockStudents,
       widget.user.role,
       selected,
       onAction: (name) =>
@@ -54,7 +46,6 @@ class _ModuleScreenState extends State<ModuleScreen> {
       canEdit,
       (target, action) => _change(action, target, 'Pending review', 'Approved'),
       kMockCertificates,
-      departmentAdmin: widget.user.role == AdminRole.departmentAdmin,
     );
   }
 
@@ -327,14 +318,13 @@ class _ModuleScreenState extends State<ModuleScreen> {
           for (final a in AdminMockData.activities.asMap().entries)
             ListTile(
                 dense: true,
-                title: Text(a.value, style: const TextStyle(fontSize: 13)),
-                subtitle: Text(
-                    'Group ${a.key < 3 ? 'I' : a.key < 6 ? 'II' : 'III'} · test rule · max contribution 40 pts'),
+                title: Text(a.value.$1, style: const TextStyle(fontSize: 13)),
+                subtitle: Text('${a.value.$2} · max contribution 40 pts'),
                 trailing: canEdit
                     ? IconButton(
                         onPressed: () => _change(
                             'Edit rulebook activity',
-                            a.value,
+                            a.value.$1,
                             'Current points: 10',
                             'Updated points: 12'),
                         icon: const Icon(Icons.edit_outlined))
@@ -395,16 +385,18 @@ class _ModuleScreenState extends State<ModuleScreen> {
 }
 
 class _StudentSource extends mui.DataTableSource {
-  _StudentSource(this.names, this.role, this.selected,
+  _StudentSource(this.students, this.role, this.selected,
       {required this.onAction});
-  final List<String> names;
+  final List<Student> students;
   final AdminRole role;
   final Set<int> selected;
   final void Function(String) onAction;
   String _query = '';
 
-  List<String> get _visibleNames => names
-      .where((name) => name.toLowerCase().contains(_query.toLowerCase()))
+  List<Student> get _visibleStudents => students
+      .where((student) =>
+          student.name.toLowerCase().contains(_query.toLowerCase()) ||
+          student.rollNo.toLowerCase().contains(_query.toLowerCase()))
       .toList();
 
   void updateQuery(String query) {
@@ -414,32 +406,31 @@ class _StudentSource extends mui.DataTableSource {
 
   @override
   mui.DataRow? getRow(int index) {
-    final visibleNames = _visibleNames;
-    if (index >= visibleNames.length) return null;
-    final id = index + 1;
-    final name = visibleNames[index];
+    final visibleStudents = _visibleStudents;
+    if (index >= visibleStudents.length) return null;
+    final student = visibleStudents[index];
+    final points = getStudentPoints(student.id);
+    final eligible = points >= 120;
     return DataRow2(
-        selected: selected.contains(id),
+        selected: selected.contains(index),
         onSelectChanged: (v) {
           if (v == true) {
-            selected.add(id);
+            selected.add(index);
           } else {
-            selected.remove(id);
+            selected.remove(index);
           }
           notifyListeners();
         },
         cells: [
-          mui.DataCell(Text(name)),
-          mui.DataCell(Text('SJCET24${(id + 100).toString()}')),
-          mui.DataCell(Text(index == 0
-              ? 'Computer Science & Engineering'
-              : 'Electronics & Communication')),
-          mui.DataCell(Text(index == 1 ? 'Lateral · S7' : 'S7 · 2024')),
-          mui.DataCell(Text('${95 + id * 5} / 120')),
-          mui.DataCell(StatusPill(id == 1 ? 'Eligible' : 'In progress',
-              color: id == 1 ? AdminColors.greenDark : AdminColors.slate)),
+          mui.DataCell(Text(student.name)),
+          mui.DataCell(Text(student.rollNo)),
+          mui.DataCell(Text(student.department)),
+          mui.DataCell(Text(student.batch)),
+          mui.DataCell(Text('$points / 120')),
+          mui.DataCell(StatusPill(eligible ? 'Eligible' : 'In progress',
+              color: eligible ? AdminColors.greenDark : AdminColors.slate)),
           mui.DataCell(IconButton(
-              onPressed: role.canEdit ? () => onAction(name) : null,
+              onPressed: role.canEdit ? () => onAction(student.name) : null,
               icon: Icon(
                   role.canEdit
                       ? Icons.edit_outlined
@@ -451,21 +442,17 @@ class _StudentSource extends mui.DataTableSource {
   @override
   bool get isRowCountApproximate => false;
   @override
-  int get rowCount => _visibleNames.length;
+  int get rowCount => _visibleStudents.length;
   @override
   int get selectedRowCount => selected.length;
 }
 
 class _SubmissionSource extends mui.DataTableSource {
-  _SubmissionSource(this.canEdit, this.act, this.certificates,
-      {this.departmentAdmin = false});
+  _SubmissionSource(this.canEdit, this.act, this.certificates);
   final bool canEdit;
   final void Function(String, String) act;
   final List<Certificate> certificates;
-  final bool departmentAdmin;
-  List<Certificate> get visibleRows => departmentAdmin
-      ? certificates.take(3).toList()
-      : certificates;
+  List<Certificate> get visibleRows => certificates;
 
   String _status(Certificate certificate) => switch (certificate.status) {
         CertificateStatus.pending => 'Pending',
@@ -511,9 +498,9 @@ class _SubmissionSource extends mui.DataTableSource {
               onPressed: canEdit ? () => act(r.title, 'Mark submission approved') : null,
               icon: const Icon(Icons.check, size: 17, color: AdminColors.greenDark))
         else
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            child: Text('Approved', style: TextStyle(color: AdminColors.greenDark, fontSize: 12, fontWeight: FontWeight.w600)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text(status, style: TextStyle(color: col, fontSize: 12, fontWeight: FontWeight.w600)),
           )
       ]))
     ]);
