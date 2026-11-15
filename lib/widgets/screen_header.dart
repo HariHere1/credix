@@ -8,7 +8,7 @@ class ScreenHeader extends StatelessWidget {
   final String title;
   final String eyebrow;
 
-  const ScreenHeader({super.key, required this.title, this.eyebrow = 'ACTIVITY POINTS'});
+  const ScreenHeader({super.key, required this.title, this.eyebrow = 'CREDIX'});
 
   /// Set by the shell so the avatar opens the Account tab.
   static VoidCallback? onProfileTap;
@@ -25,7 +25,7 @@ class ScreenHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Activity Points', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, height: 1.1, fontWeight: FontWeight.w700)),
+                const Text('CREDIX', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, height: 1.1, fontWeight: FontWeight.w700, letterSpacing: 0.8)),
                 const SizedBox(height: 2),
                 Text(title.toUpperCase(), style: const TextStyle(color: AppColors.textSecondary, fontSize: 11, height: 1.1, letterSpacing: 0.8, fontWeight: FontWeight.w700)),
               ],

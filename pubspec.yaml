@@ -28,6 +28,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/brand/credix_logo.png
 
   # DM Sans is bundled so every text style — theme-inherited or
   # explicit — always renders in DM Sans without a network fetch.

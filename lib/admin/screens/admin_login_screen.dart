@@ -72,5 +72,5 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
 class _Brand extends StatelessWidget {
   const _Brand();
   @override
-  Widget build(BuildContext context) => Row(children: [Container(width: 38, height: 38, decoration: BoxDecoration(color: const Color(0xFF00C86B), borderRadius: BorderRadius.circular(11)), child: const Icon(Icons.grid_view_rounded, color: Colors.white)), const SizedBox(width: 10), const Text('CREDIX', style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 1.4))]);
+  Widget build(BuildContext context) => Row(children: [ClipRRect(borderRadius: BorderRadius.circular(11), child: Image.asset('assets/brand/credix_logo.png', width: 38, height: 38, fit: BoxFit.cover)), const SizedBox(width: 10), const Text('CREDIX', style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 1.4))]);
 }

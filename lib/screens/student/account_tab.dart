@@ -67,7 +67,7 @@ class StudentAccountTab extends StatelessWidget {
             ),
           ),
           const Center(
-            child: Text('Activity Points Portal · v2.4.1',
+            child: Text('CREDIX · v2.4.1',
                 style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 11,
