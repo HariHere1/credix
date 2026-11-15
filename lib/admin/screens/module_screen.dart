@@ -3,6 +3,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:material_ui/material_ui.dart' as mui;
 
+import '../../data/mock_data.dart';
+import '../../models/certificate.dart';
 import '../admin_theme.dart';
 import '../models/admin_user.dart';
 import '../mock_data/admin_mock_data.dart';
@@ -51,6 +53,7 @@ class _ModuleScreenState extends State<ModuleScreen> {
     _submissionSource = _SubmissionSource(
       canEdit,
       (target, action) => _change(action, target, 'Pending review', 'Approved'),
+      kMockCertificates,
       departmentAdmin: widget.user.role == AdminRole.departmentAdmin,
     );
   }
@@ -454,54 +457,58 @@ class _StudentSource extends mui.DataTableSource {
 }
 
 class _SubmissionSource extends mui.DataTableSource {
-  _SubmissionSource(this.canEdit, this.act, {this.departmentAdmin = false});
+  _SubmissionSource(this.canEdit, this.act, this.certificates,
+      {this.departmentAdmin = false});
   final bool canEdit;
   final void Function(String, String) act;
+  final List<Certificate> certificates;
   final bool departmentAdmin;
-  final rows = const [
-    ('Akhil Thomas', 'NSS participation', 'I', '10', 'Pending', 'Nov 14, 2026'),
-    ('Ananya S.', 'Conference paper', 'II', '15', 'Flagged', 'Nov 13, 2026'),
-    (
-      'Arjun Raj',
-      'Journal publication',
-      'III',
-      '20',
-      'Approved',
-      'Nov 12, 2026'
-    ),
-    ('Diya Joseph', 'Hackathon win', 'III', '15', 'Pending', 'Nov 11, 2026'),
-    ('Nikhil Babu', 'Sports achievement', 'I', '10', 'Flagged', 'Nov 10, 2026'),
-    ('Sneha Mathew', 'Internship', 'II', '10', 'Approved', 'Nov 09, 2026'),
-    ('Joel George', 'Seminar certificate', 'II', '8', 'Auto-approved', 'Nov 08, 2026')
-  ];
-  List<(String, String, String, String, String, String)> get visibleRows =>
-      departmentAdmin ? rows.take(3).toList() : rows;
+  List<Certificate> get visibleRows => departmentAdmin
+      ? certificates.take(3).toList()
+      : certificates;
+
+  String _status(Certificate certificate) => switch (certificate.status) {
+        CertificateStatus.pending => 'Pending',
+        CertificateStatus.flagged => 'Flagged',
+        CertificateStatus.rejected => 'Rejected',
+        CertificateStatus.autoApproved || CertificateStatus.reviewed =>
+          'Approved',
+      };
+
+  String _group(Certificate certificate) => switch (certificate.group) {
+        ActivityGroup.groupI => 'I',
+        ActivityGroup.groupII => 'II',
+        ActivityGroup.groupIII => 'III',
+      };
+
   @override
   mui.DataRow? getRow(int i) {
     final shown = visibleRows;
     if (i >= shown.length) return null;
     final r = shown[i];
-    final col = r.$5 == 'Flagged'
+    final status = _status(r);
+    final col = status == 'Flagged' || status == 'Rejected'
         ? AdminColors.red
-        : r.$5 == 'Pending'
+        : status == 'Pending'
             ? AdminColors.amber
             : AdminColors.greenDark;
     return mui.DataRow(cells: [
-      mui.DataCell(Text(r.$1)),
-      mui.DataCell(Text(r.$2)),
-      mui.DataCell(Text(r.$3)),
-      mui.DataCell(Text(r.$4)),
-      mui.DataCell(StatusPill(r.$5, color: col)),
-      mui.DataCell(Text(r.$6)),
+      mui.DataCell(Text(getStudentById(r.studentId)?.name ?? 'Unknown student')),
+      mui.DataCell(Text(r.title)),
+      mui.DataCell(Text(_group(r))),
+      mui.DataCell(Text('${r.pointsAwarded > 0 ? r.pointsAwarded : r.pointsIfTrusted}')),
+      mui.DataCell(StatusPill(status, color: col)),
+      mui.DataCell(Text(r.uploadDate)),
       mui.DataCell(Row(mainAxisSize: MainAxisSize.min, children: [
         IconButton(
             tooltip: 'Review details',
-            onPressed: () => act(r.$1, 'Open submission details'),
+            onPressed: () => act(r.title, 'Open submission details'),
             icon: const Icon(Icons.open_in_new, size: 17)),
-        if (r.$5 == 'Pending' || r.$5 == 'Flagged')
+        if (r.status == CertificateStatus.pending ||
+            r.status == CertificateStatus.flagged)
           IconButton(
               tooltip: 'Mark approved',
-              onPressed: canEdit ? () => act(r.$1, 'Mark submission approved') : null,
+              onPressed: canEdit ? () => act(r.title, 'Mark submission approved') : null,
               icon: const Icon(Icons.check, size: 17, color: AdminColors.greenDark))
         else
           const Padding(
