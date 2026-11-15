@@ -1,0 +1,64 @@
+import 'package:excel/excel.dart';
+import 'package:flutter/material.dart';
+
+import '../admin_theme.dart';
+import '../data/admin_repository.dart';
+import '../mock_data/admin_mock_data.dart';
+import '../widgets/admin_card.dart';
+
+class DashboardScreen extends StatefulWidget {
+  const DashboardScreen({super.key});
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  final DashboardRepository repo = const MockDashboardRepository();
+  String batch = '2021–25 (Final Year)';
+  int get denominator => batch.startsWith('2021') ? repo.enrolled : (batch.startsWith('2022') ? 1760 : 1820);
+
+  void _export() {
+    final book = Excel.createExcel();
+    final sheet = book['Eligibility'];
+    sheet.appendRow([TextCellValue('SJCET Palai 2024 Scheme')]);
+    sheet.appendRow([TextCellValue('Department'), TextCellValue('Students'), TextCellValue('Eligible'), TextCellValue('Eligibility %')]);
+    for (final d in repo.departments) {
+      sheet.appendRow([TextCellValue(d.name), IntCellValue(d.students), IntCellValue(d.eligible), TextCellValue('${(100 * d.eligible / d.students).toStringAsFixed(1)}%')]);
+    }
+    book.save(fileName: 'credix-eligibility.xlsx');
+  }
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(builder: (context, constraints) {
+    final narrow = constraints.maxWidth < 950;
+    return SingleChildScrollView(padding: const EdgeInsets.fromLTRB(24, 22, 24, 30), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Dashboard &\nOperations Overview', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontSize: 32, height: 1.15, fontWeight: FontWeight.w700)), const SizedBox(height: 7), const Text('SJCET Palai · Autonomous B.Tech Activity Point Governance (120 Pts Mandatory Threshold)', style: TextStyle(color: AdminColors.muted, fontSize: 13))])), if (!narrow) ...[const SizedBox(width: 16), Column(crossAxisAlignment: CrossAxisAlignment.end, children: [Row(children: [const StatusPill('Live AY 2024–25'), const SizedBox(width: 8), DropdownButton<String>(value: batch, underline: const SizedBox(), items: const ['2021–25 (Final Year)', '2022–26 (S5/S6)', '2023–27 (S3/S4)', '2024–28 (First Year)'].map((s)=>DropdownMenuItem(value:s, child:Text(s, style: const TextStyle(fontSize:12)))).toList(), onChanged: (v)=>setState(()=>batch=v!)), const SizedBox(width: 8), OutlinedButton.icon(onPressed: _export, icon: const Icon(Icons.download, size:16), label: const Text('Export eligibility list'))]), const SizedBox(height: 8), FilledButton.icon(onPressed: _export, icon: const Icon(Icons.table_view, size:17), label: const Text('Export Eligibility List (Excel)'))])]]),
+      const SizedBox(height: 22),
+      GridView.count(shrinkWrap:true, physics: const NeverScrollableScrollPhysics(), crossAxisCount: narrow ? 2 : 6, childAspectRatio: narrow ? 1.75 : 1.1, crossAxisSpacing: 12, mainAxisSpacing: 12, children: [
+        StatCard(title:'Total enrolled', value:'${repo.enrolled}', note:'↑ 42 new this term', icon:Icons.people_alt_outlined),
+        StatCard(title:'Submissions', value:'${repo.submissions}', note:'94.2% verified', icon:Icons.inventory_2_outlined, color:AdminColors.slate),
+        StatCard(title:'Pending queue', value:'${repo.pending}', note:'48h avg turnaround', icon:Icons.pending_actions, color:AdminColors.slate),
+        StatCard(title:'Flagged', value:'${repo.flagged}', note:'Tamper / Dupes', icon:Icons.warning_amber, color:AdminColors.red),
+        StatCard(title:'AI verified', value:'${repo.verified}', note:'70% of total pool', icon:Icons.verified_outlined),
+        AdminCard(padding:const EdgeInsets.all(16), child:Column(crossAxisAlignment:CrossAxisAlignment.start, children:[const Text('≥120 PTS ELIGIBLE', style:TextStyle(fontSize:10, fontWeight:FontWeight.w700, color:AdminColors.greenDark)), const Spacer(), Text('${repo.eligible}', style:const TextStyle(fontSize:25,fontWeight:FontWeight.w700)), Text('${(100*repo.eligible/denominator).toStringAsFixed(1)}% cohort ready', style:const TextStyle(fontSize:11,color:AdminColors.greenDark,fontWeight:FontWeight.w600))])),
+      ]),
+      const SizedBox(height: 20),
+      if (narrow) ...[_eligibility(), const SizedBox(height:16), _distribution()] else Row(crossAxisAlignment: CrossAxisAlignment.start, children:[Expanded(flex: 6, child:_eligibility()), const SizedBox(width:16), Expanded(flex:4, child:_distribution())]),
+      const SizedBox(height:20),
+      if (narrow) ...[_workload(), const SizedBox(height:16), _alerts()] else Row(crossAxisAlignment:CrossAxisAlignment.start, children:[Expanded(flex:6, child:_workload()), const SizedBox(width:16), Expanded(flex:3, child:_alerts())]),
+      const SizedBox(height:16),
+      AdminCard(child: Column(crossAxisAlignment:CrossAxisAlignment.start, children:[const AdminSectionTitle('Recent activity', subtitle:'Refreshes on page load'), const SizedBox(height:12), const Text('• Super Admin modified Group I maximum cap policy.\n• Dr. Elizabeth Joseph batch-approved 18 IEEE conference claims.\n• AI OCR Pipeline scanned 45 certificates (0 duplicates).\n• Prof. Mathew Kurian reassigned 12 claims from Batch B to Batch C.', style:TextStyle(height:1.7,fontSize:12)), Align(alignment:Alignment.centerRight, child:TextButton(onPressed:()=>{}, child:const Text('View Full Audit Log →')))])),
+    ]));
+  });
+
+  Widget _eligibility() => AdminCard(child: Column(crossAxisAlignment:CrossAxisAlignment.start, children:[const AdminSectionTitle('Degree Eligibility Progress by Department', subtitle:'Autonomous cohort breakdown against 120 points benchmark'), const SizedBox(height:14), Wrap(spacing:4, runSpacing:4, children: ['2021–25 (Final Year)','2022–26 (S5/S6)','2023–27 (S3/S4)','2024–28 (First Year)'].map((v)=>ChoiceChip(label:Text(v, style:const TextStyle(fontSize:11)), selected:batch==v, onSelected:(_)=>setState(()=>batch=v))).toList()), const SizedBox(height:18), ...repo.departments.map((d)=>_department(d)), const SizedBox(height:10), const Wrap(spacing:18, children:[_Legend(color:AdminColors.green, text:'Above Target Rate (≥80%)'), _Legend(color:Color(0xFFBFC7DC), text:'Approaching Target (<80%)')]) ]));
+  Widget _department(DepartmentSnapshot d) { final pct=d.eligible/d.students; final color=pct>=.8 ? AdminColors.green : const Color(0xFFBFC7DC); return Padding(padding:const EdgeInsets.only(bottom:14), child:Column(children:[Row(children:[Expanded(child:Text(d.name, style:const TextStyle(fontSize:12,fontWeight:FontWeight.w600))), Text('${d.eligible} / ${d.students} eligible  ', style:const TextStyle(fontSize:11,color:AdminColors.muted)), StatusPill('${(pct*100).toStringAsFixed(1)}%', color:color==AdminColors.green?AdminColors.greenDark:AdminColors.slate)]), const SizedBox(height:5), ClipRRect(borderRadius:BorderRadius.circular(8), child:LinearProgressIndicator(value:pct,minHeight:9,color:color,backgroundColor:const Color(0xFFE9ECEE)))])); }
+  Widget _distribution() => AdminCard(child:Column(crossAxisAlignment:CrossAxisAlignment.start, children:[const AdminSectionTitle('Points Distribution by Group', subtitle:'SJCET Palai 2024 Scheme · group cap 40 points'), const SizedBox(height:16), for (final item in const [('Group I','Activities, arts and sports',34.2,.855),('Group II','Internships, conferences, workshops',28.6,.715),('Group III','Publications, innovation, skilling',22.4,.56)]) _group(item.$1,item.$2,item.$3,item.$4), Container(padding:const EdgeInsets.all(14), decoration:BoxDecoration(color:const Color(0xFFE4F1EB),borderRadius:BorderRadius.circular(12)), child:const Text('✓ Cap enforcement active\nPoints above a group cap are not counted toward degree eligibility.', style:TextStyle(fontSize:12,color:AdminColors.greenDark,height:1.45,fontWeight:FontWeight.w600)))]));
+  Widget _group(String name,String desc,double avg,double util)=>Container(margin:const EdgeInsets.only(bottom:10),padding:const EdgeInsets.all(14),decoration:BoxDecoration(color:const Color(0xFFF1F3F4),borderRadius:BorderRadius.circular(12)),child:Column(crossAxisAlignment:CrossAxisAlignment.start, children:[Row(children:[StatusPill(name),const SizedBox(width:8),Expanded(child:Text(desc,style:const TextStyle(fontWeight:FontWeight.w600,fontSize:13))),const Text('Max cap: 40',style:TextStyle(fontSize:10,fontWeight:FontWeight.w600))]), const SizedBox(height:12),Row(children:[Expanded(child:Text('Average earned: ${avg.toStringAsFixed(1)} pts',style:const TextStyle(fontSize:11,color:AdminColors.muted))),Text('${(util*100).toStringAsFixed(1)}% utilization',style:const TextStyle(fontSize:11,color:AdminColors.greenDark,fontWeight:FontWeight.w700))]),const SizedBox(height:8),ClipRRect(borderRadius:BorderRadius.circular(10),child:LinearProgressIndicator(value:util,minHeight:7,color:AdminColors.green,backgroundColor:const Color(0xFFE6E9EA)))]));
+  Widget _workload()=>AdminCard(child:Column(crossAxisAlignment:CrossAxisAlignment.start, children:[const AdminSectionTitle('Tutor Workload & Review SLA Tracker', subtitle:'Faculty advisors monitoring B.Tech student verification queues', trailing:StatusPill('84% On-Time SLA')), const SizedBox(height:16), const _MiniTableHeader(), for(final row in const [('EJ','Dr. Elizabeth Joseph','CSE · Semester 7 (Sec A)','64','12','1.4 days','4.2%'),('MK','Prof. Mathew Kurian','ECE · Semester 7 (Sec B)','60','28','3.8 days','8.1%'),('PT','Dr. Priya Thomas','AI&DS · Semester 5','58','8','0.9 days','2.1%'),('AV','Prof. Arun Varghese','ME · Semester 7','62','34','4.1 days','6.5%')]) _reviewRow(row), const SizedBox(height:10), const Text('Showing 4 of 32 faculty reviewers active this cycle', style:TextStyle(fontSize:11,color:AdminColors.muted))]));
+  Widget _reviewRow((String,String,String,String,String,String,String) r)=>Padding(padding:const EdgeInsets.symmetric(vertical:11), child:Row(children:[CircleAvatar(radius:14,backgroundColor:const Color(0xFFD1E8DB),child:Text(r.$1,style:const TextStyle(fontSize:9,fontWeight:FontWeight.w700))), const SizedBox(width:8), Expanded(flex:3,child:Text(r.$2,style:const TextStyle(fontSize:11,fontWeight:FontWeight.w600))), Expanded(flex:2,child:Text(r.$3,style:const TextStyle(fontSize:10))), Text(r.$4,style:const TextStyle(fontSize:11)), const SizedBox(width:15), Text(r.$5,style:TextStyle(fontSize:11,color:int.parse(r.$5)>20?AdminColors.red:AdminColors.ink)), const SizedBox(width:14), Text(r.$6,style:TextStyle(fontSize:11,color:r.$6.startsWith('3')||r.$6.startsWith('4')?AdminColors.red:AdminColors.greenDark))]));
+  Widget _alerts()=>AdminCard(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const AdminSectionTitle('Operational alerts',trailing:StatusPill('3 Active',color:AdminColors.red)), const SizedBox(height:12), for(final a in const [('Tamper spike detected','6 certificates flagged with altered date metadata in CSE S7.',AdminColors.red),('Overdue reviews (>72h)','62 submissions pending tutor review for over 3 days.',AdminColors.slate),('Eligibility list ready','Final-year eligible student list is ready for Excel export.',AdminColors.greenDark)]) Container(margin:const EdgeInsets.only(bottom:9),padding:const EdgeInsets.all(12),decoration:BoxDecoration(color:a.$3.withValues(alpha:.08),borderRadius:BorderRadius.circular(12)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(a.$1,style:TextStyle(fontSize:12,fontWeight:FontWeight.w700,color:a.$3)),Text(a.$2,style:const TextStyle(fontSize:11,height:1.4,color:AdminColors.muted))]))]));
+}
+
+class _Legend extends StatelessWidget { const _Legend({required this.color,required this.text}); final Color color; final String text; @override Widget build(BuildContext context)=>Row(mainAxisSize:MainAxisSize.min,children:[Container(width:9,height:9,decoration:BoxDecoration(color:color,borderRadius:BorderRadius.circular(2))),const SizedBox(width:5),Text(text,style:const TextStyle(fontSize:10,color:AdminColors.muted))]); }
+class _MiniTableHeader extends StatelessWidget { const _MiniTableHeader(); @override Widget build(BuildContext context)=>const Padding(padding:EdgeInsets.symmetric(vertical:9),child:Row(children:[Expanded(flex:3,child:Text('FACULTY REVIEWER',style:TextStyle(fontSize:9,color:AdminColors.muted,fontWeight:FontWeight.w700))),Expanded(flex:2,child:Text('DEPT / BATCH',style:TextStyle(fontSize:9,color:AdminColors.muted,fontWeight:FontWeight.w700))),Text('ASSIGNED',style:TextStyle(fontSize:9,color:AdminColors.muted,fontWeight:FontWeight.w700)),SizedBox(width:36),Text('PENDING',style:TextStyle(fontSize:9,color:AdminColors.muted,fontWeight:FontWeight.w700)),SizedBox(width:36),Text('AVG SLA',style:TextStyle(fontSize:9,color:AdminColors.muted,fontWeight:FontWeight.w700))])); }
