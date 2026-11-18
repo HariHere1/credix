@@ -48,9 +48,13 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       return;
     }
-    if (!_advisorRole && (id == kMockStudent.rollNo || id == kMockStudent.email) && _passwordCtrl.text == kMockStudent.password) {
+    final student = kMockStudents.where((student) =>
+      (student.rollNo == id || student.email == id) &&
+      student.password == _passwordCtrl.text,
+    ).firstOrNull;
+    if (!_advisorRole && student != null) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const StudentShell()),
+        MaterialPageRoute(builder: (_) => StudentShell(student: student)),
       );
       return;
     }

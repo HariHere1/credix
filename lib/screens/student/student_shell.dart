@@ -2,14 +2,17 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import '../../widgets/screen_header.dart';
+import '../../data/mock_data.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import 'certificates_tab.dart';
 import 'points_tab.dart';
 import 'account_tab.dart';
+import '../../models/student.dart';
 
 class StudentShell extends StatefulWidget {
-  const StudentShell({super.key});
+  final Student student;
+  const StudentShell({super.key, this.student = kMockStudent});
 
   @override
   State<StudentShell> createState() => _StudentShellState();
@@ -24,10 +27,10 @@ class _StudentShellState extends State<StudentShell> {
     return Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
-        children: const [
-          CertificatesTab(),
-          PointsTab(),
-          StudentAccountTab(),
+        children: [
+          CertificatesTab(student: widget.student),
+          PointsTab(student: widget.student),
+          StudentAccountTab(student: widget.student),
         ],
       ),
       bottomNavigationBar: ClipRRect(

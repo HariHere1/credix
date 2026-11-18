@@ -8,9 +8,11 @@ import '../../widgets/screen_header.dart';
 import '../../widgets/status_chip.dart';
 import '../shared/certificate_detail_screen.dart';
 import 'upload_screen.dart';
+import '../../models/student.dart';
 
 class CertificatesTab extends StatefulWidget {
-  const CertificatesTab({super.key});
+  final Student student;
+  const CertificatesTab({super.key, this.student = kMockStudent});
 
   @override
   State<CertificatesTab> createState() => _CertificatesTabState();
@@ -20,7 +22,7 @@ class _CertificatesTabState extends State<CertificatesTab> {
   String _filter = 'All';
 
   List<Certificate> get _certificates =>
-      getStudentCertificates(kMockStudent.id);
+      getStudentCertificates(widget.student.id);
 
   bool _isApproved(Certificate certificate) =>
       certificate.status == CertificateStatus.autoApproved ||
@@ -39,7 +41,7 @@ class _CertificatesTabState extends State<CertificatesTab> {
     final approved = certificates.where(_isApproved).toList();
     final attention = certificates.where(_needsAttention).toList();
     final pending = certificates.where(_isPending).toList();
-    final totalPoints = getStudentPoints(kMockStudent.id);
+    final totalPoints = getStudentPoints(widget.student.id);
     final visible = switch (_filter) {
       'Needs Attention' => attention,
       'Pending' => pending,
@@ -583,7 +585,7 @@ class _CertificatesTabState extends State<CertificatesTab> {
 
   Future<void> _openUpload() async {
     await Navigator.of(context)
-        .push(MaterialPageRoute(builder: (_) => const UploadScreen()));
+        .push(MaterialPageRoute(builder: (_) => UploadScreen(student: widget.student)));
     if (mounted) setState(() {});
   }
 }

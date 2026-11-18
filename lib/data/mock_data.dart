@@ -26,6 +26,17 @@ const Student kHighScoringStudent = Student(
   batch: '2021–2025',
   department: 'Computer Science & Engineering',
   password: 'student123',
+
+);
+
+const Student kLowscoringStudent = Student(
+  id: 's003',
+  name : 'Hari',
+  rollNo : 'CS2021003',
+  email: 'hari@college.edu',
+  batch: '2021–2025',
+  department: 'Computer Science & Engineering',
+  password: 'student123',
 );
 
 const Advisor kMockAdvisor = Advisor(
@@ -36,7 +47,7 @@ const Advisor kMockAdvisor = Advisor(
   password: 'advisor123',
 );
 
-const List<Student> kMockStudents = [kMockStudent, kHighScoringStudent];
+const List<Student> kMockStudents = [kMockStudent, kHighScoringStudent, kLowscoringStudent];
 
 List<Certificate> kMockCertificates = [
   // Low-scoring student: one auto-approved, pending, flagged and rejected claim.

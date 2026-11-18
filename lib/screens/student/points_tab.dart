@@ -6,13 +6,15 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../widgets/circular_progress_gauge.dart';
 import '../../widgets/screen_header.dart';
+import '../../models/student.dart';
 
 class PointsTab extends StatelessWidget {
-  const PointsTab({super.key});
+  final Student student;
+  const PointsTab({super.key, this.student = kMockStudent});
 
   @override
   Widget build(BuildContext context) {
-    final studentId = kMockStudent.id;
+    final studentId = student.id;
     final pointsByGroup = <ActivityGroup, int>{
       ActivityGroup.groupI: getGroupPoints(studentId, ActivityGroup.groupI),
       ActivityGroup.groupII: getGroupPoints(studentId, ActivityGroup.groupII),

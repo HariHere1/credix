@@ -5,9 +5,11 @@ import '../../models/certificate.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../widgets/slide_confirm_button.dart';
+import '../../models/student.dart';
 
 class UploadScreen extends StatefulWidget {
-  const UploadScreen({super.key});
+  final Student student;
+  const UploadScreen({super.key, required this.student});
 
   @override
   State<UploadScreen> createState() => _UploadScreenState();
@@ -65,7 +67,7 @@ class _UploadScreenState extends State<UploadScreen> {
 
     final newCert = Certificate(
       id: 'c${DateTime.now().millisecondsSinceEpoch}',
-      studentId: kMockStudent.id,
+      studentId: widget.student.id,
       title: _titleCtrl.text.trim(),
       activityType: activityType,
       group: ActivityGroup.groupI,

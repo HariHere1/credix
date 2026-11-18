@@ -5,13 +5,14 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../widgets/screen_header.dart';
 import '../auth/login_screen.dart';
+import '../../models/student.dart';
 
 class StudentAccountTab extends StatelessWidget {
-  const StudentAccountTab({super.key});
+  final Student student;
+  const StudentAccountTab({super.key, this.student = kMockStudent});
 
   @override
   Widget build(BuildContext context) {
-    final student = kMockStudent;
     const maximum = 120;
     final points = getStudentPoints(student.id);
     final progress = (points / maximum).clamp(0.0, 1.0);
@@ -241,11 +242,14 @@ class StudentAccountTab extends StatelessWidget {
                       style: const TextStyle(
                           color: Colors.white,
                           fontSize: 27,
+                          fontFamily : 'DMSans',
                           fontWeight: FontWeight.w800)),
                   TextSpan(
                       text: ' / $maximum Points',
                       style: const TextStyle(
-                          color: Color(0xFFCBD5D1), fontSize: 14)),
+                          fontFamily : 'DMSans',
+                          fontSize: 14,
+                          color: Color(0xFFCBD5D1))),
                 ]),
               ),
             ),
